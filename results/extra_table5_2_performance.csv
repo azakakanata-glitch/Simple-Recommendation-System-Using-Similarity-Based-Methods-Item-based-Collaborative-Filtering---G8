@@ -1,0 +1,12 @@
+﻿measurement,result,unit
+"Build the cosine similarity matrix (full data, no cache)",2.09,s
+"20 recommendations for one user (cosine), mean over 610 users",3.71,ms
+Size of the cosine cache file (k = 50),1.77,MB
+"Build the pearson similarity matrix (full data, no cache)",1.92,s
+"20 recommendations for one user (pearson), mean over 610 users",3.29,ms
+Size of the pearson cache file (k = 50),1.42,MB
+"Build the jaccard similarity matrix (full data, no cache)",1.86,s
+"20 recommendations for one user (jaccard), mean over 610 users",4.01,ms
+Size of the jaccard cache file (k = 50),1.15,MB
+Evaluate configuration E2 on the full test set (from scratch),2.53,s
+Peak memory while evaluating E2 (allocated by Python/NumPy),1291.0,MB

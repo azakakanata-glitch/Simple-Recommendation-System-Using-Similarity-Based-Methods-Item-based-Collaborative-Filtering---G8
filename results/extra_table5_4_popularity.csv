@@ -1,0 +1,6 @@
+﻿configuration,median_ratings,share_le_2_ratings_pct,distinct_movies,precision_at_5
+"E1 Cosine, first version",1.0,98.6,881,0.0
+"Cosine, k=50, beta=10, ranked by predicted rating",17.0,0.0,1255,0.0043
+"E2 Cosine, ranked by summed similarity",115.0,0.0,514,0.2405
+E3 Pearson,38.0,0.0,674,0.0963
+E4 Jaccard,125.0,0.0,455,0.2254

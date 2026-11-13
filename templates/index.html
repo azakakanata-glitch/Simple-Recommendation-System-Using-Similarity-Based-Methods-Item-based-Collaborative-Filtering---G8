@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CineMatch – Similarity-Based Movie Recommender</title>
+  <meta name="description" content="Foundation Project demo: an Item-based Collaborative Filtering movie recommender built on the MovieLens dataset.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <a class="skip" href="#demo">Skip to the demo</a>
+
+  <!-- ===== Navigation bar ===== -->
+  <header class="nav" id="nav">
+    <div class="container nav__inner">
+      <a class="logo" href="#top" aria-label="CineMatch, back to top">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="5" width="30" height="22" rx="6"></rect><path d="M13 11v10l9-5z"></path></svg>
+        <span>CineMatch</span>
+      </a>
+      <nav class="nav__links" aria-label="Main sections">
+        <a href="#demo">Demo</a>
+        <a href="#data">Data</a>
+        <a href="#design">Design</a>
+        <a href="#process">Process</a>
+        <a href="#results">Results</a>
+      </nav>
+      <a class="btn btn--primary btn--sm" href="#demo">Try the demo</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ===== Hero ===== -->
+    <section class="hero">
+      <div class="container hero__inner">
+        <div class="hero__copy">
+          <p class="tag">[ Foundation Project, Team G8 ]</p>
+          <h1>A similarity-based movie recommender</h1>
+          <p class="hero__lead">Item-based Collaborative Filtering on MovieLens data: find movies similar to the ones a viewer rated highly, and explain why each movie is recommended.</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#demo">Get recommendations</a>
+            <a class="btn btn--ghost" href="#data">Explore the data</a>
+          </div>
+          <ul class="hero__points">
+            <li>Three measures: Cosine, Pearson, Jaccard</li>
+            <li>Evaluated on 20,168 test ratings</li>
+            <li>Runs fully offline on your machine</li>
+          </ul>
+        </div>
+
+        <!-- Preview frame: real recommendations for one profile -->
+        <figure class="preview" aria-label="Recommendation preview">
+          <div class="preview__bar"><span></span><span></span><span></span><em>127.0.0.1:5000</em></div>
+          <div class="preview__body">
+            <p class="preview__label">Recommended for profile <strong id="preview-user">#414</strong></p>
+            <ol class="preview__list" id="preview-list"></ol>
+            <p class="preview__foot" id="preview-foot">Loading…</p>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ===== Stats band ===== -->
+    <section class="stats" aria-label="Dataset size">
+      <div class="container stats__grid" id="stats-band">
+        <div class="stat"><strong data-stat="n_ratings">–</strong><span>ratings</span></div>
+        <div class="stat"><strong data-stat="n_users">–</strong><span>users</span></div>
+        <div class="stat"><strong data-stat="n_movies_rated">–</strong><span>rated movies</span></div>
+        <div class="stat"><strong data-stat="density">–</strong><span>of matrix cells filled</span></div>
+      </div>
+    </section>
+
+    <!-- ===== /01 Demo ===== -->
+    <section class="section" id="demo">
+      <div class="container">
+        <header class="section__head">
+          <p class="section__num">/ 01</p>
+          <h2>Try the recommender</h2>
+          <p>Pick a real MovieLens viewer profile, then change the similarity measure and the number of movies to see how the list changes.</p>
+        </header>
+
+        <div class="app">
+          <aside class="app__side" aria-label="Recommendation options">
+            <div class="field">
+              <label for="profile-input">Profile ID</label>
+              <div class="combo">
+                <input id="profile-input" list="profile-options" inputmode="numeric" autocomplete="off" placeholder="1 to 610">
+                <datalist id="profile-options"></datalist>
+                <button type="button" id="profile-go">Show</button>
+              </div>
+            </div>
+            <div class="field">
+              <span class="field__label">Most active profiles</span>
+              <ul class="quick" id="quick-list"></ul>
+            </div>
+            <div class="field">
+              <span class="field__label" id="measure-label">Similarity measure</span>
+              <div class="segmented" role="radiogroup" aria-labelledby="measure-label" id="measure-group"></div>
+            </div>
+            <div class="field">
+              <span class="field__label" id="n-label">Number of movies</span>
+              <div class="stepper" role="group" aria-labelledby="n-label">
+                <button type="button" id="n-minus" aria-label="One movie fewer">−</button>
+                <output id="n-value">10</output>
+                <button type="button" id="n-plus" aria-label="One movie more">+</button>
+              </div>
+            </div>
+            <p class="app__note" id="config-note"></p>
+          </aside>
+
+          <div class="app__main" aria-live="polite">
+            <div class="profile">
+              <div>
+                <h3 id="profile-title">Profile</h3>
+                <p id="profile-stats"></p>
+              </div>
+              <ul class="chips" id="profile-genres" aria-label="Most-watched genres"></ul>
+            </div>
+            <div class="tabs" role="tablist" aria-label="Content">
+              <button type="button" role="tab" id="tab-recs" aria-selected="true" aria-controls="panel-recs">Recommendations</button>
+              <button type="button" role="tab" id="tab-watched" aria-selected="false" aria-controls="panel-watched">Rated highly</button>
+            </div>
+            <div id="panel-recs" role="tabpanel" aria-labelledby="tab-recs">
+              <p class="status" id="rec-status" role="status"></p>
+              <ol class="movies" id="rec-list"></ol>
+            </div>
+            <div id="panel-watched" role="tabpanel" aria-labelledby="tab-watched" hidden>
+              <p class="status">The movies this profile rated highest, for comparison with the recommendations.</p>
+              <ol class="movies" id="watched-list"></ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== /02 Data (Chapter 3, Section 3.2) ===== -->
+    <section class="section section--white" id="data">
+      <div class="container">
+        <header class="section__head">
+          <p class="section__num">/ 02</p>
+          <h2>The MovieLens data</h2>
+          <p>The tables and charts of Section 3.2 of the report, computed directly from the data every time the app starts.</p>
+        </header>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="card__title"><span class="ref">Table 3.3</span> Data files</h3>
+            <table class="table">
+              <thead><tr><th>File</th><th>Content</th><th>Used for</th></tr></thead>
+              <tbody id="table-files"></tbody>
+            </table>
+            <h3 class="card__title card__title--sub"><span class="ref">Section 3.6</span> Train/test split</h3>
+            <table class="table table--kv">
+              <tbody id="table-split"></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <h3 class="card__title"><span class="ref">Table 3.4</span> Dataset statistics</h3>
+            <table class="table table--kv">
+              <tbody id="table-stats"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <figure class="card chart-card">
+            <h3 class="card__title"><span class="ref">Figure 3.1</span> Rating distribution</h3>
+            <div class="chart" id="chart-ratings" role="img"></div>
+            <figcaption id="cap-ratings"></figcaption>
+          </figure>
+          <figure class="card chart-card">
+            <h3 class="card__title"><span class="ref">Figure 3.2</span> Movies by number of ratings</h3>
+            <div class="chart" id="chart-tail" role="img"></div>
+            <figcaption id="cap-tail"></figcaption>
+          </figure>
+          <figure class="card chart-card">
+            <h3 class="card__title"><span class="ref">Figure 3.3</span> Shared raters per movie pair</h3>
+            <div class="chart" id="chart-support" role="img"></div>
+            <figcaption id="cap-support"></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== /03 From data to design (Table 3.5) ===== -->
+    <section class="section" id="design">
+      <div class="container">
+        <header class="section__head">
+          <p class="section__num">/ 03</p>
+          <h2>From data characteristics to design decisions</h2>
+          <p>Table 3.5: each characteristic of the data leads to a concrete choice in the algorithm.</p>
+        </header>
+        <ol class="decisions" id="decisions"></ol>
+      </div>
+    </section>
+
+    <!-- ===== /04 Process ===== -->
+    <section class="section section--white" id="process">
+      <div class="container">
+        <header class="section__head">
+          <p class="section__num">/ 04</p>
+          <h2>How it works</h2>
+          <p>The heavy computation runs once at start-up; each recommendation request then takes only a few milliseconds.</p>
+        </header>
+        <ol class="process">
+          <li><span class="process__tag">Offline</span><h3>Read the data</h3><p>Read ratings.csv and movies.csv; split 80/20 into train and test for evaluation.</p></li>
+          <li><span class="process__tag">Offline</span><h3>Build the matrices</h3><p>Rating matrix R and indicator matrix M, stored as float32.</p></li>
+          <li><span class="process__tag">Offline</span><h3>Compute similarity</h3><p>Cosine, Pearson or Jaccard between every pair of movies with one matrix multiplication.</p></li>
+          <li><span class="process__tag">Offline</span><h3>Shrink and keep k neighbours</h3><p>Penalise pairs with few shared raters, keep the k most similar movies, save the cache.</p></li>
+          <li><span class="process__tag process__tag--on">Online</span><h3>Score the movies</h3><p>The ranking score is the summed similarity to the movies already watched, plus a predicted rating.</p></li>
+          <li><span class="process__tag process__tag--on">Online</span><h3>Return the Top-N list</h3><p>Drop watched movies and movies with too few ratings, and attach a reason to each recommendation.</p></li>
+        </ol>
+
+        <div class="card params">
+          <h3 class="card__title"><span class="ref">Table 3.9</span> Current parameters</h3>
+          <table class="table">
+            <thead><tr><th>Parameter</th><th>Value</th><th>Meaning</th></tr></thead>
+            <tbody id="table-params"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== /05 Results (Chapter 5) ===== -->
+    <section class="section" id="results">
+      <div class="container">
+        <header class="section__head">
+          <p class="section__num">/ 05</p>
+          <h2>Evaluation results</h2>
+          <p>Table 5.3: results of evaluate.py on the full test set, compared with the baselines.</p>
+        </header>
+        <div class="highlights" id="highlights"></div>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="table table--results">
+              <thead><tr><th>Configuration</th><th>RMSE</th><th>MAE</th><th>Coverage</th><th>Precision@5</th><th>Recall@5</th></tr></thead>
+              <tbody id="table-results"></tbody>
+            </table>
+          </div>
+          <p class="table-note" id="results-note">Lower is better for RMSE and MAE; higher is better for Coverage, Precision@5 and Recall@5. A dash means the metric does not apply.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="container footer__grid">
+      <div>
+        <a class="logo logo--light" href="#top">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="5" width="30" height="22" rx="6"></rect><path d="M13 11v10l9-5z"></path></svg>
+          <span>CineMatch</span>
+        </a>
+        <p>Simple Recommendation System Using Similarity-Based Methods (Item-based Collaborative Filtering). Foundation Project, Hanoi University of Industry.</p>
+      </div>
+      <div>
+        <h4>Team G8</h4>
+        <ul>
+          <li>Nguyễn Khánh Toàn (team leader)</li>
+          <li>Lê Nhật Minh</li>
+          <li>Bùi Minh Tân</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Data and technology</h4>
+        <ul>
+          <li>MovieLens ml-latest-small, GroupLens Research, University of Minnesota</li>
+          <li>Python, NumPy, SciPy, pandas, Flask</li>
+        </ul>
+      </div>
+    </div>
+    <div class="container footer__bottom">The data is used for study and research purposes only.</div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

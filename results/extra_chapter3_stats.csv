@@ -1,0 +1,6 @@
+﻿metric,value
+Rows in tags.csv (Table 3.3),3683
+Movie pairs with a shared rater (train),9805355
+Movie pairs with exactly 1 shared rater,6643149
+Movie pairs with Cosine >= 0.999,175154
+Pairs with Cosine >= 0.999 based on 1 user,174938

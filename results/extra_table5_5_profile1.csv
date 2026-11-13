@@ -1,0 +1,11 @@
+﻿measure,rank,movie,n_ratings,predicted,because_liked
+cosine,1,Aliens (1986),126,4.57,"Terminator, The (1984)"
+cosine,2,Terminator 2: Judgment Day (1991),224,4.23,"Terminator, The (1984)"
+cosine,3,"Godfather, The (1972)",192,4.63,Goodfellas (1990)
+cosine,4,Die Hard (1988),145,4.49,Indiana Jones and the Last Crusade (1989)
+cosine,5,"Sixth Sense, The (1999)",179,4.58,"Matrix, The (1999)"
+pearson,1,"Spy Who Loved Me, The (1977)",18,4.56,From Russia with Love (1963)
+pearson,2,Beneath the Planet of the Apes (1970),18,3.51,Planet of the Apes (1968)
+pearson,3,Aliens (1986),126,4.53,Alien (1979)
+pearson,4,Escape from the Planet of the Apes (1971),15,3.73,Conan the Barbarian (1982)
+pearson,5,Moonraker (1979),26,4.36,Superman II (1980)
